@@ -1,75 +1,8 @@
-# Nuxt Minimal Starter
+# Microsoft Sentinel Ingest Planner
+I built this small web app to help plan out Sentinel deployment ingest, as the Azure pricing calculator does get quite in-depth enough for truly planning out data lake and analytic commitment tiers. The app will automatically calculate costs based on the data sources you input as well as the commitment tier you select.
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Click the `Add Log Source` button to add a new log source. Provide a name and planned ingest in megabytes (MB), as well as if you want to ingest this to the analytic tier or the data lake tier.
 
-## Setup
-
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Planned Updates
+- Add in calculation for the Sentinel E5 benefit
+- Add in retianed storage calculation for data lake tier log sources
