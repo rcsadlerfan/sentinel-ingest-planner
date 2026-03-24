@@ -5,6 +5,10 @@ import cronstrue from 'cronstrue'
 // Cookie Settings
 const helpPopupShown = useCookie('helpPopupShown')
 
+// Setup Local Storage
+const dataSources = useLocalStorage('data-sources', [])
+const commitTier = useLocalStorage('commit-tier', 0)
+
 // Component Hookups
 const addModelOpen = ref(false)
 const helpModalOpen = ref(false)
@@ -99,10 +103,6 @@ const dataLakeStorageCost = 0.026
 const dataLakeIngestionCost = 0.05
 const dataLakeProcessingCost = 0.1
 const dataLakeQueryCost = 0.005
-
-// Dyanmic Data
-let dataSources = ref([])
-const commitTier = ref(0)
 
 // Computed Data
 const totalMb = computed(() => {

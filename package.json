@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
+    "@vueuse/nuxt": "^14.2.1",
     "cronstrue": "^3.14.0",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2",
