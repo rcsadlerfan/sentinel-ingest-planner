@@ -12,6 +12,7 @@ const commitTier = useLocalStorage('commit-tier', 0)
 // Component Hookups
 const addModelOpen = ref(false)
 const helpModalOpen = ref(false)
+const clearModalOpen = ref(false)
 
 // Fixed Component Setup
 const analyticsCommitTiers = ref([
@@ -225,6 +226,12 @@ function getReadableCron(exp) {
   }
 }
 
+function clearStorage() {
+  dataSources.value = []
+  commitTier.value = 0
+  clearModalOpen.value = false
+}
+
 // Page load steps
 onMounted(() => {
   if (!(helpPopupShown.value)) {
@@ -278,6 +285,19 @@ onMounted(() => {
               <p>The monthly cost breakdown will be on the side and dynamically updates as you enter information into the calculator. The sidebar also has links to Microsoft resources to help understand the pricing.</p>
               <br>
               <p>The meter at the top of the page shows the breakdown of data between the two tiers based on the data sources added.</p>
+            </template>
+          </UModal>
+          <UModal v-model:open="clearModalOpen" title="Reset">
+            <UTooltip text="Reset">
+              <UButton icon="i-lucide-trash" color="error"></UButton>
+            </UTooltip>
+            <template #body>
+              <p>Are you sure you want to clear all data?</p>
+            </template>
+            <template #footer>
+              <div class="w-full flex">
+                <UButton @click="clearStorage">Confirm</UButton>
+              </div>
             </template>
           </UModal>
         </div>
