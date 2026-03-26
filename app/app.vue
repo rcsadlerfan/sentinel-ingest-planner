@@ -1,6 +1,10 @@
 <script setup>
 // Imports
 import cronstrue from 'cronstrue'
+import config from '@/assets/config.json'
+
+// Import Defined Data Sources (adds custom option for dropdown)
+const definedDataSources = ref([...config.dataSources, {id: 99999, label: 'Custom', e5: false, free: false}])
 
 // Cookie Settings
 const helpPopupShown = useCookie('helpPopupShown')
@@ -118,6 +122,9 @@ const analyticMb = computed(() => {
   let totalMb = 0
   const analyticSources = dataSources.value.filter(d => !d.dataLake)
   for (let i = 0; i < analyticSources.length; i++) {
+    if (analyticSources[i].free) {
+      continue
+    }
     totalMb += analyticSources[i].ingestPerDayMb
   }
   return totalMb
@@ -196,18 +203,23 @@ const in_newDataSourceName = ref('')
 const in_newDataSourceIngestMb = ref(0)
 const in_newDataSourceDataLake = ref(false)
 const in_e5Benefit = ref(false)
+const in_dataSource = ref('')
 
 // Functions
 function addDataSource() {
+  const dataSourceConfig = definedDataSources.value.filter(d => d.label == in_dataSource.value)[0]
   dataSources.value.push({
     id: dataSources.value.length + 1,
-    name: in_newDataSourceName.value,
+    name: in_dataSource.value === 'Custom' ? in_newDataSourceName.value : in_dataSource.value,
     ingestPerDayMb: in_newDataSourceIngestMb.value,
     dataLake: in_newDataSourceDataLake.value,
-    retainedMonths: 0
+    retainedMonths: 0,
+    e5: dataSourceConfig ? dataSourceConfig.e5 : false,
+    free: dataSourceConfig ? dataSourceConfig.free : false
   })
 
   addModelOpen.value = false
+  in_dataSource.value = ''
   in_newDataSourceName.value = ''
   in_newDataSourceIngestMb.value = 0
   in_newDataSourceDataLake.value = false
@@ -319,7 +331,12 @@ onMounted(() => {
 
                 <template #body>
                   <div class="space-y-4">
-                    <UFormField label="Data Source Name" required>
+                    <UFormField label="Data Source">
+                      <USelect v-model="in_dataSource" value-key="label" class="w-full" :items="definedDataSources" trailing-icon="i-lucide-chevron-down"></USelect>
+                    </UFormField>
+                    <p v-if="in_dataSource && definedDataSources.filter(d => d.label === in_dataSource)[0].e5" class="italic">This log source qualifies for the E5 benefit</p>
+                    <p v-if="in_dataSource && definedDataSources.filter(d => d.label === in_dataSource)[0].free" class="italic">Ingest for this log source is not charged</p>
+                    <UFormField v-if="in_dataSource == 'Custom'" label="Data Source Name" required>
                       <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
                     </UFormField>
                     <UFormField label="Ingest (MB) / day" required>
@@ -332,7 +349,7 @@ onMounted(() => {
                 </template>
 
                 <template #footer>
-                  <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addDataSource">Add</UButton>
+                  <UButton :disabled="(in_dataSource == '' || (in_dataSource == 'Custom' && in_newDataSourceName == '') || in_newDataSourceIngestMb < 0)" @click="addDataSource">Add</UButton>
                 </template>
               </UModal>
             </div>
@@ -340,7 +357,11 @@ onMounted(() => {
               <p v-if="dataSources.filter(d => !d.dataLake).length==0" class="italic">No data sources added.</p>
               <UCard v-else v-for="d in dataSources.filter(d => !d.dataLake)">
                 <template #header>
-                  <h1 class="text-xl">{{ d.name }}</h1>
+                  <div class="space-y-2">
+                    <h1 class="text-xl">{{ d.name }}</h1>
+                    <UBadge v-if="d.free" color="success">Free</UBadge>
+                    <UBadge v-if="d.e5" color="info">E5 Benefit</UBadge>
+                  </div>
                 </template>
                 <div>
                   <UFormField label="Ingest (MB) / day">

@@ -1,0 +1,22 @@
+{
+    "dataSources": [
+        {
+            "id": 1,
+            "label": "Microsoft Windows Security Event Log",
+            "e5": false,
+            "free": false
+        },
+        {
+            "id": 2,
+            "label": "Microsoft Entra ID",
+            "e5": true,
+            "free": false
+        },
+        {
+            "id": 3,
+            "label": "Microsoft Azure Subscription Audit",
+            "e5": false,
+            "free": true
+        }
+    ]
+}
