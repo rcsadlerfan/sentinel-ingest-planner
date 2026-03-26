@@ -122,6 +122,15 @@ const analyticMb = computed(() => {
   let totalMb = 0
   const analyticSources = dataSources.value.filter(d => !d.dataLake)
   for (let i = 0; i < analyticSources.length; i++) {
+    totalMb += analyticSources[i].ingestPerDayMb
+  }
+  return totalMb
+})
+
+const chargedAnalyticMb = computed(() => {
+  let totalMb = 0
+  const analyticSources = dataSources.value.filter(d => !d.dataLake)
+  for (let i = 0; i < analyticSources.length; i++) {
     if (analyticSources[i].free) {
       continue
     }
@@ -167,17 +176,17 @@ const dataLakeTotalCostComputed = computed(() => {
 })
 
 const overageComputed = computed(() => {
-  if (commitTier.value < 0 || analyticMb.value / 1024 < analyticsCommitTiers.value[commitTier.value].cap) return 0
+  if (commitTier.value < 0 || chargedAnalyticMb.value / 1024 < analyticsCommitTiers.value[commitTier.value].cap) return 0
 
-  const overage = analyticMb.value / 1024 - analyticsCommitTiers.value[commitTier.value].cap
+  const overage = chargedAnalyticMb.value / 1024 - analyticsCommitTiers.value[commitTier.value].cap
   return overage * analyticsCommitTiers.value[commitTier.value].cost
 })
 
 const analyticStorageCostComputed = computed(() => {
   if (commitTier.value == 0) {
-    return analyticMb.value / 1024 * analyticsCommitTiers.value[0].cost
+    return chargedAnalyticMb.value / 1024 * analyticsCommitTiers.value[0].cost
   } else {
-    if (analyticMb.value / 1024 < analyticsCommitTiers.value[commitTier.value].cap) {
+    if (chargedAnalyticMb.value / 1024 < analyticsCommitTiers.value[commitTier.value].cap) {
       return analyticsCommitTiers.value[commitTier.value].daily
     } else {
       return analyticsCommitTiers.value[commitTier.value].daily + overageComputed.value
@@ -422,7 +431,7 @@ onMounted(() => {
             <h1 class="text-2xl mb-5">Monthly Cost Breakdown</h1>
             <div class="space-y-4">
               <div class="space-y-2">
-                <h2 class="text-xl">Analytics Tier - {{ (analyticMb / 1024 * 31).toFixed(2) }}GB</h2>
+                <h2 class="text-xl">Analytics Tier - {{ (chargedAnalyticMb / 1024 * 31).toFixed(2) }}GB</h2>
                 <div class="flex justify-between">
                   <p>{{ analyticsCommitTiers[commitTier].label }}</p>
                   <p v-if="commitTier === 0">${{ analyticsCommitTiers[commitTier].cost.toFixed(2) }}/GB</p>
