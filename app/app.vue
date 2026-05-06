@@ -454,7 +454,7 @@ onMounted(() => {
           icon="i-simple-icons-github"
           color="neutral"
           variant="ghost"
-          to="https://github.com/nuxt/nuxt"
+          to="https://github.com/rcsadlerfan/sentinel-ingest-planner"
           target="_blank"
           aria-label="GitHub"
         ></UButton>
