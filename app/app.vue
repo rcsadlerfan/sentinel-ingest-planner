@@ -253,7 +253,7 @@ onMounted(() => {
               <div class="flex space-x-6">
                 <div class="flex items-center space-x-2">
                   <UChip :ui="analyticChipUiOverride"></UChip>
-                  <p class="italic">Analytic Tier</p>
+                  <p class="italic">Analytics Tier</p>
                 </div>
                 <div class="flex items-center space-x-2">
                   <UChip :ui="dataLakeChipUiOverride"></UChip>
@@ -262,7 +262,7 @@ onMounted(() => {
               </div>
             </div>
             <div class="flex grow w-full h-2 bg-gray-500 rounded-xl overflow-hidden">
-                <!-- Analytic Tier -->
+                <!-- Analytics Tier -->
                 <div class="bg-green-400" :style="{ width: (analyticMb / totalMb) * 100 + '%'}"></div>
                 <!-- Data Lake Tier -->
                 <div class="bg-blue-400" :style="{ width: (dataLakeMb / totalMb) * 100 + '%'}"></div>
