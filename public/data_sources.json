@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Microsoft Azure Administrative Activity",
+        "category": "Cloud",
+        "free": true,
+        "e5": false,
+        "avg_ingest_mb": 10
+    },
+    {
+        "name": "Microsoft Entra ID",
+        "category": "Identity & Access Management",
+        "free": false,
+        "e5": true,
+        "avg_ingest_mb": 10
+    },
+    {
+        "name": "Zscaler Internet Access",
+        "category": "SASE",
+        "free": false,
+        "e5": false,
+        "avg_ingest_mb": 500
+    }
+]

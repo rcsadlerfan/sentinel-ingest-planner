@@ -9,6 +9,9 @@ const helpPopupShown = useCookie('helpPopupShown')
 const dataSources = useLocalStorage('data-sources', [])
 const commitTier = useLocalStorage('commit-tier', 0)
 
+// Ref Objects
+const predefinedDataSources = ref([])
+
 // Component Hookups
 const addModelOpen = ref(false)
 const helpModalOpen = ref(false)
@@ -104,6 +107,7 @@ const dataLakeStorageCost = 0.026
 const dataLakeIngestionCost = 0.05
 const dataLakeProcessingCost = 0.1
 const dataLakeQueryCost = 0.005
+const dataSourcesLoading = ref(false)
 
 // Computed Data
 const totalMb = computed(() => {
@@ -232,6 +236,16 @@ function clearStorage() {
   clearModalOpen.value = false
 }
 
+async function getPredefinedDataSources() {
+  dataSourcesLoading.value = true
+  try {
+    predefinedDataSources.value = await $fetch('/data_sources.json')
+  } catch (e) {
+    console.log(e)
+  }
+  dataSourcesLoading.value = false
+}
+
 // Page load steps
 onMounted(() => {
   if (!(helpPopupShown.value)) {
@@ -315,10 +329,13 @@ onMounted(() => {
                 </UDropdownMenu>
               </div>
               <UModal v-model:open="addModelOpen" title="Add Data Source">
-                <UButton icon="lucide:plus">Add Data Source</UButton>
+                <UButton @click="getPredefinedDataSources" :loading="dataSourcesLoading" icon="lucide:plus">Add Data Source</UButton>
 
                 <template #body>
-                  <div class="space-y-4">
+                  <div v-if="dataSourcesLoading">
+                    Loading...
+                  </div>
+                  <div v-else class="space-y-4">
                     <UFormField label="Data Source Name" required>
                       <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
                     </UFormField>
