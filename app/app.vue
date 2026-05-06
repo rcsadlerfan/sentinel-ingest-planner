@@ -108,6 +108,7 @@ const dataLakeIngestionCost = 0.05
 const dataLakeProcessingCost = 0.1
 const dataLakeQueryCost = 0.005
 const dataSourcesLoading = ref(false)
+const selectedDataSourceCategory = ref('All')
 
 // Computed Data
 const totalMb = computed(() => {
@@ -125,6 +126,30 @@ const analyticMb = computed(() => {
     totalMb += analyticSources[i].ingestPerDayMb
   }
   return totalMb
+})
+
+const dataSourceCategories = computed(() => {
+  const cat = [
+    {
+      label: 'All',
+      onSelect: () => selectedDataSourceCategory.value = 'All'
+    }
+  ]
+
+  predefinedDataSources.value.map(ds => ds.category).forEach(c => {
+    cat.push({
+      label: c,
+      onSelect: () => selectedDataSourceCategory.value = c
+    })
+  })
+
+  return cat
+})
+
+const filteredDataSources = computed(() => {
+  if (selectedDataSourceCategory.value === 'All') return predefinedDataSources.value
+
+  return predefinedDataSources.value.filter(ds => ds.category == selectedDataSourceCategory.value)
 })
 
 // Need to update this to compute additional storage without affecting other metrics
@@ -328,15 +353,39 @@ onMounted(() => {
                   <UButton variant="outline" color="neutral" icon="lucide:chevron-down"><b>Commitment Tier:</b> {{ analyticsCommitTiers[commitTier].label }}</UButton>
                 </UDropdownMenu>
               </div>
-              <UModal v-model:open="addModelOpen" title="Add Data Source">
+              <UModal fullscreen v-model:open="addModelOpen" title="Add Data Source">
                 <UButton @click="getPredefinedDataSources" :loading="dataSourcesLoading" icon="lucide:plus">Add Data Source</UButton>
 
                 <template #body>
                   <div v-if="dataSourcesLoading">
                     Loading...
                   </div>
-                  <div v-else class="space-y-4">
-                    <UFormField label="Data Source Name" required>
+                  <div v-else>
+                    <UPage>
+                      <template #left>
+                        <UPageAside>
+                          <!-- FIXME: BUG - Selected item not highligted -->
+                          <UNavigationMenu :items="dataSourceCategories" orientation="vertical"></UNavigationMenu>
+                        </UPageAside>
+                      </template>
+                      <UPageBody>
+                        <p>{{ selectedDataSourceCategory }}</p>
+                        <div class="grid grid-cols-3 gap-5">
+                          <!-- TODO: Add in hover animations for cards -->
+                          <UCard
+                            v-for="ds in filteredDataSources"
+                          >
+                            <div class="space-y-2">
+                              <h2 class="text-xl">{{ ds.name }}</h2>
+                              <p>Average Ingest (MB): {{ ds.avg_ingest_mb }}</p>
+                              <p>Free Data Source: <b>{{ ds.free ? 'Yes' : 'No' }}</b></p>
+                              <p>E5 Data Source: <b>{{ ds.e5 ? 'Yes' : 'No' }}</b></p>
+                            </div>
+                          </UCard>
+                        </div>
+                      </UPageBody>
+                    </UPage>
+                    <!-- <UFormField label="Data Source Name" required>
                       <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
                     </UFormField>
                     <UFormField label="Ingest (MB) / day" required>
@@ -344,13 +393,13 @@ onMounted(() => {
                     </UFormField>
                     <UFormField>
                       <USwitch v-model="in_newDataSourceDataLake" label="Data Lake"></USwitch>
-                    </UFormField>
+                    </UFormField> -->
                   </div>
                 </template>
 
-                <template #footer>
+                <!-- <template #footer>
                   <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addDataSource">Add</UButton>
-                </template>
+                </template> -->
               </UModal>
             </div>
             <UPageGrid>
