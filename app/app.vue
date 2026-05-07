@@ -400,6 +400,7 @@ onMounted(() => {
                           <!-- TODO: Add in hover animations for cards -->
                           <UCard
                             v-for="ds in filteredDataSources"
+                            class="hover:ring hover:ring-inset hover:ring-primary hover:cursor-pointer"
                           >
                             <div class="space-y-2">
                               <h2 class="text-xl">{{ ds.name }}</h2>
