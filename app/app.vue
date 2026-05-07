@@ -14,6 +14,7 @@ const predefinedDataSources = ref([])
 
 // Component Hookups
 const addModelOpen = ref(false)
+const addCustomModalOpen = ref(false)
 const helpModalOpen = ref(false)
 const clearModalOpen = ref(false)
 
@@ -224,10 +225,11 @@ const dataLakeChipUiOverride = {
 const in_newDataSourceName = ref('')
 const in_newDataSourceIngestMb = ref(0)
 const in_newDataSourceDataLake = ref(false)
+// TODO - Implement E5 benefit flags
 const in_e5Benefit = ref(false)
 
 // Functions
-function addDataSource() {
+function addCustomDataSource() {
   dataSources.value.push({
     id: dataSources.value.length + 1,
     name: in_newDataSourceName.value,
@@ -236,7 +238,7 @@ function addDataSource() {
     retainedMonths: 0
   })
 
-  addModelOpen.value = false
+  addCustomModalOpen.value = false
   in_newDataSourceName.value = ''
   in_newDataSourceIngestMb.value = 0
   in_newDataSourceDataLake.value = false
@@ -353,6 +355,30 @@ onMounted(() => {
                   <UButton variant="outline" color="neutral" icon="lucide:chevron-down"><b>Commitment Tier:</b> {{ analyticsCommitTiers[commitTier].label }}</UButton>
                 </UDropdownMenu>
               </div>
+              <div class="flex items-center space-x-4">
+                <!-- Custom Data Source Modal -->
+               <UModal v-model:open="addCustomModalOpen" title="Add Custom Data Source">
+                <UButton variant="outline" label="Add Custom Data Source" icon="lucide:plus"></UButton>
+                
+                <template #body>
+                    <div class="space-y-4">
+                      <UFormField label="Data Source Name" required>
+                        <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
+                      </UFormField>
+                      <UFormField label="Ingest (MB) / day" required>
+                        <UInputNumber v-model="in_newDataSourceIngestMb" class="w-full"></UInputNumber>
+                      </UFormField>
+                      <UFormField>
+                        <USwitch v-model="in_newDataSourceDataLake" label="Data Lake"></USwitch>
+                      </UFormField>
+                    </div>
+                  </template>
+
+                  <template #footer>
+                    <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addCustomDataSource">Add</UButton>
+                  </template>
+               </UModal>
+              <!-- Pre-Defined Data Sources Modal -->
               <UModal fullscreen v-model:open="addModelOpen" title="Add Data Source">
                 <UButton @click="getPredefinedDataSources" :loading="dataSourcesLoading" icon="lucide:plus">Add Data Source</UButton>
 
@@ -385,22 +411,10 @@ onMounted(() => {
                         </div>
                       </UPageBody>
                     </UPage>
-                    <!-- <UFormField label="Data Source Name" required>
-                      <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
-                    </UFormField>
-                    <UFormField label="Ingest (MB) / day" required>
-                      <UInputNumber v-model="in_newDataSourceIngestMb" class="w-full"></UInputNumber>
-                    </UFormField>
-                    <UFormField>
-                      <USwitch v-model="in_newDataSourceDataLake" label="Data Lake"></USwitch>
-                    </UFormField> -->
                   </div>
                 </template>
-
-                <!-- <template #footer>
-                  <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addDataSource">Add</UButton>
-                </template> -->
               </UModal>
+              </div>
             </div>
             <UPageGrid>
               <p v-if="dataSources.filter(d => !d.dataLake).length==0" class="italic">No data sources added.</p>
