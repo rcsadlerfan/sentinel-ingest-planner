@@ -246,6 +246,18 @@ function addCustomDataSource() {
   in_newDataSourceDataLake.value = false
 }
 
+function addDataSource(ds) {
+  dataSources.value.push({
+    id: dataSources.value.length + 1,
+    name: ds.name,
+    ingestPerDayMb: ds.avg_ingest_mb,
+    dataLake: false,
+    retainedMonths: 0
+  })
+
+  addModelOpen.value = false
+}
+
 function removeDataSource(id) {
   const idx = dataSources.value.findIndex(d => d.id === id)
   dataSources.value = dataSources.value.toSpliced(idx, 1)
@@ -400,6 +412,7 @@ onMounted(() => {
                           <!-- TODO: Add in hover animations for cards -->
                           <UCard
                             v-for="ds in filteredDataSources"
+                            @click="addDataSource(ds)"
                             class="hover:ring hover:ring-inset hover:ring-primary hover:cursor-pointer"
                           >
                             <div class="space-y-2">
