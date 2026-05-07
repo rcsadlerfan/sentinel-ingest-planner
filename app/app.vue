@@ -9,8 +9,12 @@ const helpPopupShown = useCookie('helpPopupShown')
 const dataSources = useLocalStorage('data-sources', [])
 const commitTier = useLocalStorage('commit-tier', 0)
 
+// Ref Objects
+const predefinedDataSources = ref([])
+
 // Component Hookups
 const addModelOpen = ref(false)
+const addCustomModalOpen = ref(false)
 const helpModalOpen = ref(false)
 const clearModalOpen = ref(false)
 
@@ -104,6 +108,8 @@ const dataLakeStorageCost = 0.026
 const dataLakeIngestionCost = 0.05
 const dataLakeProcessingCost = 0.1
 const dataLakeQueryCost = 0.005
+const dataSourcesLoading = ref(false)
+const selectedDataSourceCategory = ref('All')
 
 // Computed Data
 const totalMb = computed(() => {
@@ -121,6 +127,32 @@ const analyticMb = computed(() => {
     totalMb += analyticSources[i].ingestPerDayMb
   }
   return totalMb
+})
+
+const dataSourceCategories = computed(() => {
+  const cat = [
+    {
+      label: 'All',
+      onSelect: () => selectedDataSourceCategory.value = 'All',
+      active: selectedDataSourceCategory.value === 'All'
+    }
+  ]
+
+  new Set(predefinedDataSources.value.map(ds => ds.category)).forEach(c => {
+    cat.push({
+      label: c,
+      onSelect: () => selectedDataSourceCategory.value = c,
+      active: selectedDataSourceCategory.value === c
+    })
+  })
+
+  return cat
+})
+
+const filteredDataSources = computed(() => {
+  if (selectedDataSourceCategory.value === 'All') return predefinedDataSources.value
+
+  return predefinedDataSources.value.filter(ds => ds.category == selectedDataSourceCategory.value)
 })
 
 // Need to update this to compute additional storage without affecting other metrics
@@ -195,10 +227,11 @@ const dataLakeChipUiOverride = {
 const in_newDataSourceName = ref('')
 const in_newDataSourceIngestMb = ref(0)
 const in_newDataSourceDataLake = ref(false)
+// TODO - Implement E5 benefit flags
 const in_e5Benefit = ref(false)
 
 // Functions
-function addDataSource() {
+function addCustomDataSource() {
   dataSources.value.push({
     id: dataSources.value.length + 1,
     name: in_newDataSourceName.value,
@@ -207,10 +240,22 @@ function addDataSource() {
     retainedMonths: 0
   })
 
-  addModelOpen.value = false
+  addCustomModalOpen.value = false
   in_newDataSourceName.value = ''
   in_newDataSourceIngestMb.value = 0
   in_newDataSourceDataLake.value = false
+}
+
+function addDataSource(ds) {
+  dataSources.value.push({
+    id: dataSources.value.length + 1,
+    name: ds.name,
+    ingestPerDayMb: ds.avg_ingest_mb,
+    dataLake: false,
+    retainedMonths: 0
+  })
+
+  addModelOpen.value = false
 }
 
 function removeDataSource(id) {
@@ -230,6 +275,16 @@ function clearStorage() {
   dataSources.value = []
   commitTier.value = 0
   clearModalOpen.value = false
+}
+
+async function getPredefinedDataSources() {
+  dataSourcesLoading.value = true
+  try {
+    predefinedDataSources.value = await $fetch('/data_sources.json')
+  } catch (e) {
+    console.log(e)
+  }
+  dataSourcesLoading.value = false
 }
 
 // Page load steps
@@ -253,7 +308,7 @@ onMounted(() => {
               <div class="flex space-x-6">
                 <div class="flex items-center space-x-2">
                   <UChip :ui="analyticChipUiOverride"></UChip>
-                  <p class="italic">Analytic Tier</p>
+                  <p class="italic">Analytics Tier</p>
                 </div>
                 <div class="flex items-center space-x-2">
                   <UChip :ui="dataLakeChipUiOverride"></UChip>
@@ -262,7 +317,7 @@ onMounted(() => {
               </div>
             </div>
             <div class="flex grow w-full h-2 bg-gray-500 rounded-xl overflow-hidden">
-                <!-- Analytic Tier -->
+                <!-- Analytics Tier -->
                 <div class="bg-green-400" :style="{ width: (analyticMb / totalMb) * 100 + '%'}"></div>
                 <!-- Data Lake Tier -->
                 <div class="bg-blue-400" :style="{ width: (dataLakeMb / totalMb) * 100 + '%'}"></div>
@@ -314,27 +369,66 @@ onMounted(() => {
                   <UButton variant="outline" color="neutral" icon="lucide:chevron-down"><b>Commitment Tier:</b> {{ analyticsCommitTiers[commitTier].label }}</UButton>
                 </UDropdownMenu>
               </div>
-              <UModal v-model:open="addModelOpen" title="Add Data Source">
-                <UButton icon="lucide:plus">Add Data Source</UButton>
+              <div class="flex items-center space-x-4">
+                <!-- Custom Data Source Modal -->
+               <UModal v-model:open="addCustomModalOpen" title="Add Custom Data Source">
+                <UButton variant="outline" label="Add Custom Data Source" icon="lucide:plus"></UButton>
+                
+                <template #body>
+                    <div class="space-y-4">
+                      <UFormField label="Data Source Name" required>
+                        <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
+                      </UFormField>
+                      <UFormField label="Ingest (MB) / day" required>
+                        <UInputNumber v-model="in_newDataSourceIngestMb" class="w-full"></UInputNumber>
+                      </UFormField>
+                      <UFormField>
+                        <USwitch v-model="in_newDataSourceDataLake" label="Data Lake"></USwitch>
+                      </UFormField>
+                    </div>
+                  </template>
+
+                  <template #footer>
+                    <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addCustomDataSource">Add</UButton>
+                  </template>
+               </UModal>
+              <!-- Pre-Defined Data Sources Modal -->
+              <UModal fullscreen v-model:open="addModelOpen" title="Add Data Source">
+                <UButton @click="getPredefinedDataSources" :loading="dataSourcesLoading" icon="lucide:plus">Add Data Source</UButton>
 
                 <template #body>
-                  <div class="space-y-4">
-                    <UFormField label="Data Source Name" required>
-                      <UInput v-model="in_newDataSourceName" class="w-full"></UInput>
-                    </UFormField>
-                    <UFormField label="Ingest (MB) / day" required>
-                      <UInputNumber v-model="in_newDataSourceIngestMb" class="w-full"></UInputNumber>
-                    </UFormField>
-                    <UFormField>
-                      <USwitch v-model="in_newDataSourceDataLake" label="Data Lake"></USwitch>
-                    </UFormField>
+                  <div v-if="dataSourcesLoading">
+                    Loading...
+                  </div>
+                  <div v-else>
+                    <UPage>
+                      <template #left>
+                        <UPageAside>
+                          <UNavigationMenu :items="dataSourceCategories" orientation="vertical"></UNavigationMenu>
+                        </UPageAside>
+                      </template>
+                      <UPageBody>
+                        <div class="grid grid-cols-3 gap-5">
+                          <!-- TODO: Add in hover animations for cards -->
+                          <UCard
+                            v-for="ds in filteredDataSources"
+                            @click="addDataSource(ds)"
+                            class="hover:ring hover:ring-inset hover:ring-primary hover:cursor-pointer"
+                          >
+                            <div class="space-y-2">
+                              <h2 class="text-xl">{{ ds.name }}</h2>
+                              <p>Average Ingest (MB): {{ ds.avg_ingest_mb }}</p>
+                              <p>Free Data Source: <b>{{ ds.free ? 'Yes' : 'No' }}</b></p>
+                              <p>E5 Data Source: <b>{{ ds.e5 ? 'Yes' : 'No' }}</b></p>
+                            </div>
+                          </UCard>
+                        </div>
+                      </UPageBody>
+                    </UPage>
                   </div>
                 </template>
-
-                <template #footer>
-                  <UButton :disabled="(in_newDataSourceName == '' || in_newDataSourceIngestMb < 0)" @click="addDataSource">Add</UButton>
-                </template>
               </UModal>
+              </div>
             </div>
             <UPageGrid>
               <p v-if="dataSources.filter(d => !d.dataLake).length==0" class="italic">No data sources added.</p>

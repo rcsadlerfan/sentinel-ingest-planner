@@ -17,5 +17,8 @@
     "tailwindcss": "^4.2.2",
     "vue": "^3.5.30",
     "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "csv-parser": "^3.2.1"
   }
 }
