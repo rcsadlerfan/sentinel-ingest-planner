@@ -4,5 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   modules: ['@nuxt/ui', '@vueuse/nuxt'],
-  css: ['~/assets/css/main.css']
+  css: ['~/assets/css/main.css'],
+  app: {
+    head: {
+      title: 'Sentinel Ingest Calculator'
+    }
+  }
 })
