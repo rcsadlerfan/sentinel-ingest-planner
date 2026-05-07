@@ -133,14 +133,16 @@ const dataSourceCategories = computed(() => {
   const cat = [
     {
       label: 'All',
-      onSelect: () => selectedDataSourceCategory.value = 'All'
+      onSelect: () => selectedDataSourceCategory.value = 'All',
+      active: selectedDataSourceCategory.value === 'All'
     }
   ]
 
   predefinedDataSources.value.map(ds => ds.category).forEach(c => {
     cat.push({
       label: c,
-      onSelect: () => selectedDataSourceCategory.value = c
+      onSelect: () => selectedDataSourceCategory.value = c,
+      active: selectedDataSourceCategory.value === c
     })
   })
 
@@ -390,12 +392,10 @@ onMounted(() => {
                     <UPage>
                       <template #left>
                         <UPageAside>
-                          <!-- FIXME: BUG - Selected item not highligted -->
                           <UNavigationMenu :items="dataSourceCategories" orientation="vertical"></UNavigationMenu>
                         </UPageAside>
                       </template>
                       <UPageBody>
-                        <p>{{ selectedDataSourceCategory }}</p>
                         <div class="grid grid-cols-3 gap-5">
                           <!-- TODO: Add in hover animations for cards -->
                           <UCard
