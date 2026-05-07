@@ -138,7 +138,7 @@ const dataSourceCategories = computed(() => {
     }
   ]
 
-  predefinedDataSources.value.map(ds => ds.category).forEach(c => {
+  new Set(predefinedDataSources.value.map(ds => ds.category)).forEach(c => {
     cat.push({
       label: c,
       onSelect: () => selectedDataSourceCategory.value = c,
