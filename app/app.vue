@@ -361,7 +361,7 @@ onMounted(() => {
     <UMain>
       <UPage>
         <UPageBody>
-          <UContainer class="space-y-8">
+          <UContainer class="space-y-4">
             <div class="flex justify-between items-center">
               <div class="flex items-center space-x-4">
                 <h1 class="text-2xl">Analytics Tier</h1>
@@ -430,64 +430,9 @@ onMounted(() => {
               </UModal>
               </div>
             </div>
-            <UPageGrid>
-              <p v-if="dataSources.filter(d => !d.dataLake).length==0" class="italic">No data sources added.</p>
-              <UCard v-else v-for="d in dataSources.filter(d => !d.dataLake)">
-                <template #header>
-                  <h1 class="text-xl">{{ d.name }}</h1>
-                </template>
-                <div>
-                  <UFormField label="Ingest (MB) / day">
-                    <UInputNumber
-                      v-model="d.ingestPerDayMb"
-                      class="flex grow"
-                      placeholder="Size in MB"
-                    ></UInputNumber>
-                  </UFormField>
-                </div>
-                <template #footer>
-                  <div class="flex justify-between items-center">
-                    <UButton @click="removeDataSource(d.id)" variant="outline" color="error">Remove</UButton>
-                    <UButton @click="d.dataLake = true">Move to Data Lake</UButton>
-                  </div>
-                </template>
-              </UCard>
-            </UPageGrid>
+             <LogSourceTable :log_sources="dataSources.filter(d => !d.dataLake)"></LogSourceTable>
             <h1 class="text-2xl">Data Lake Tier</h1>
-            <UPageGrid>
-              <p v-if="dataSources.filter(d => d.dataLake).length==0" class="italic">No data sources added.</p>
-              <UCard v-else v-for="d in dataSources.filter(d => d.dataLake)">
-                <template #header>
-                  <h1 class="text-xl">{{ d.name }}</h1>
-                </template>
-                <div class="space-y-4">
-                  <UFormField label="Ingest (MB) / day">
-                    <UInputNumber
-                      v-model="d.ingestPerDayMb"
-                      class="flex grow"
-                      placeholder="Size in MB"
-                    ></UInputNumber>
-                  </UFormField>
-                  <UFormField label="Months of retention" help="Added to current month">
-                    <UInputNumber
-                      v-model="d.retainedMonths"
-                      class="flex grow"
-                      placeholder="12"
-                    ></UInputNumber>
-                  </UFormField>
-                  <!-- Review adding at a later date -->
-                  <!-- <UFormField label="How often will this data be queried" description="Enter as Cron Expression" :help=getReadableCron(d.cron)>
-                    <UInput v-model="d.cron" class="w-full"></UInput>
-                  </UFormField> -->
-                </div>
-                <template #footer>
-                  <div class="flex justify-between items-center">
-                    <UButton @click="removeDataSource(d.id)" variant="outline" color="error">Remove</UButton>
-                    <UButton @click="d.dataLake = false">Move to Analytic</UButton>
-                  </div>
-                </template>
-              </UCard>
-            </UPageGrid>
+            <LogSourceTable :log_sources="dataSources.filter(d => d.dataLake)"></LogSourceTable>
           </UContainer>
         </UPageBody>
         <template #right>
